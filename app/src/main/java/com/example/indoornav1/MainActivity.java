@@ -11,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.LoginFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -18,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -25,7 +28,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 class NavItem {
     String mTitle;
@@ -91,6 +107,13 @@ public class MainActivity extends AppCompatActivity {
           RelativeLayout mDrawerPane;
     ListView mDrawerList;
     private DrawerLayout mDrawerLayout;
+
+    private EditText searchBox;
+    Button goButton;
+    String searchQuery;
+
+    //For HTTPRequest
+    String retVal;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,9 +139,86 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Hamburger Icon
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        //EditText
+        searchBox=findViewById(R.id.editText);
+        goButton=findViewById(R.id.button);
+        searchQuery=searchBox.getText().toString();
+        goButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    volleyGETRequest(searchQuery);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getApplicationContext(), "RequestSent",Toast.LENGTH_LONG).show();
+
+
+            }
+        });
 
 
 
+
+
+
+
+
+    }
+
+    private void volleyGETRequest(String searchQuery) throws JSONException {
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "https://reqres.in/api/users/2";
+        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                        startNavActivity(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        ) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("name", "Troshos");
+                params.put("job", "KREC");
+                return params;
+            }
+
+
+        };
+        queue.add(putRequest);
+
+
+    }
+    private void startNavActivity(String response) {
+        Log.e("In SNA", "Res is "+response);
+        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
+        intent.putExtra("response",response);
+        startActivity(intent);
+
+    }
+
+
+    @Override
+    protected void onStart() {
+
+
+        super.onStart();
     }
 
     private  void selectItemFromDrawer(int position) {
@@ -131,13 +231,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Yet to come", Toast.LENGTH_SHORT).show();
 
         } else if (position == 2) {
-            CouponFragment couponFragment = new CouponFragment();
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.mainContent, couponFragment)
-                    .commit();
-            mDrawerList.setItemChecked(position, true);
-            setTitle(mNavItems.get(position).mTitle);
+
         }
 
         mDrawerLayout.closeDrawer(mDrawerPane);
@@ -145,3 +239,6 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+
+//TODO: Add Hamburger Icon, recolor the toolbar and add icons
+//CodeTheory: Add More Functionality to Navigation Bar
