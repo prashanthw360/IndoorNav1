@@ -32,7 +32,9 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -111,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchBox;
     Button goButton;
     String searchQuery;
+    private NetworkImageView mNetworkImageView;
+    private ImageLoader mImageLoader;
 
     //For HTTPRequest
     String retVal;
@@ -118,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //NavigationBar
         mNavItems.add(new NavItem("Navigate", "Default Page", R.drawable.ic_launcher_foreground));
         mNavItems.add(new NavItem("Compare and Buy", "Some Thing1", R.drawable.ic_launcher_foreground));
         mNavItems.add(new NavItem("Coupons and Premiums", "Something2", R.drawable.ic_launcher_foreground));
@@ -140,27 +145,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Hamburger Icon
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //EditText
-        searchBox=findViewById(R.id.editText);
-        goButton=findViewById(R.id.button);
-        searchQuery=searchBox.getText().toString();
-        goButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    volleyGETRequest(searchQuery);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Toast.makeText(getApplicationContext(), "RequestSent",Toast.LENGTH_LONG).show();
-
-
-            }
-        });
-
-
 
 
 
@@ -170,45 +157,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void volleyGETRequest(String searchQuery) throws JSONException {
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://reqres.in/api/users/2";
-        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // response
-                        Log.d("Response", response);
-                        startNavActivity(response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // error
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        ) {
-
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("name", "Troshos");
-                params.put("job", "KREC");
-                return params;
-            }
-
-
-        };
-        queue.add(putRequest);
-
-
-    }
-    private void startNavActivity(String response) {
-        Log.e("In SNA", "Res is "+response);
         Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
-        intent.putExtra("response",response);
+        intent.putExtra("payload",searchQuery);
         startActivity(intent);
 
     }
@@ -217,8 +167,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
 
-
         super.onStart();
+        searchBox=findViewById(R.id.editText);
+        goButton=findViewById(R.id.button);
+
+        goButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    while(searchQuery == null)
+                        searchQuery=searchBox.getText().toString();
+                    volleyGETRequest(searchQuery);
+                    searchQuery=null;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
     }
 
     private  void selectItemFromDrawer(int position) {
