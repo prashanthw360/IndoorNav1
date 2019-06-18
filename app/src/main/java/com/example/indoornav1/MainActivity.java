@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     String bid;
-    private void volleyGETRequest(String searchQuery) throws JSONException {
+    private void startNavigation(String searchQuery) throws JSONException {
 
         final Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
         Log.e("MainActivity","Search Query is "+searchQuery);
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     while(searchQuery == null)
                         searchQuery=searchBox.getText().toString();
-                    volleyGETRequest(searchQuery);
+                    startNavigation(searchQuery);
                     searchQuery=null;
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -213,14 +213,13 @@ public class MainActivity extends AppCompatActivity {
     private  void selectItemFromDrawer(int position) {
 
         if(position ==0){
-
-            Intent i = new Intent(MainActivity.this, MainActivity.class);
-            startActivity(i);
+            Toast.makeText(MainActivity.this, "In Here",Toast.LENGTH_SHORT).show();
         }
        else if (position == 1) {
             Toast.makeText(getApplicationContext(), "Yet to come", Toast.LENGTH_SHORT).show();
 
         } else if (position == 2) {
+
 
         }
 

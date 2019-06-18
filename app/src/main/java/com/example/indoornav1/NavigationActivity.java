@@ -76,20 +76,36 @@ public class NavigationActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
             //REST Query
-            int i=0;
+            String cs,ps=null;
             try {
 
-                do{
-                    if(strings[0]==strings[1]) {//exit the loop
+                //The Below statement will run as follows
+                /*
+                If cs(current state of nearest beacon) will be equal to ps, then no beacon will be loaded
+                At (1) the value of cs changes then cs!=ps. In this case a new beacon will be detected and location will be updated
+
+                //Dont get confused with  (2) and (1), Later modify the statement such that only end bid is passed to the asynctask
+                //(3): When no beacon is recognised, nothing is done, just the loop is contunued so that a value might be read
+                 */
+
+                    while(!strings[0].equals(strings[1])) {
+                        cs=strings[0];  //---(2)
+                        //ToDo: Uncomment the below statement later
+                        //cs=getNearestBeacon();  //----(1)
+                        if(cs.equals(ps) || cs == null)  //-->(3)
+                            continue;
+                        else {
+                            navStatus = callAPI(strings[0], strings[1]);
+                            Log.e("Order", "After callAPI.Data is " + navStatus);
+                            //                    //For Testing Purpose
+                            //                    if(i==1){ navStatus="https://res.infoq.com/presentations/rest-api-testing-postman/en/slides/sl1-1542245696017.jpg";}
+                            //                    if(i==2){navStatus="https://octoperf.com/img/blog/jmeter-rest-api-testing/jmeter-rest-api-testing.jpg";}
+                            ps=cs;
+                            publishProgress(navStatus);
+                        }
                     }
-                    navStatus=callAPI(strings[0],strings[1]);
-                    Log.e("Order","After callAPI.Data is "+navStatus);
-                    //For Testing Purpose
-                    if(i==1){ navStatus="https://res.infoq.com/presentations/rest-api-testing-postman/en/slides/sl1-1542245696017.jpg";}
-                    if(i==2){navStatus="https://octoperf.com/img/blog/jmeter-rest-api-testing/jmeter-rest-api-testing.jpg";}
-                    publishProgress(navStatus);
-                    i++;
-               }while(i<3);
+
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -210,8 +226,6 @@ public class NavigationActivity extends AppCompatActivity {
 
 
 
-
-//ToDo:set up firebase for Beacon IDs
-//toDO:POST call and assign the url to image
-//todo: Using that URL, load the image
+//toDo: Center the image while its loading
+//Todo: Handle all the errors in the app. Handle the communication erros by reading the error variable in JSON response
 //todo: Do this whenever the beacon value changes OR every 4s
