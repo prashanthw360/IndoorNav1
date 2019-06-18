@@ -24,7 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +32,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NavigationActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
@@ -45,6 +46,7 @@ public class NavigationActivity extends AppCompatActivity {
     private ImageLoader mImageLoader;
     String bid; //ToDo: To be changed to String
     String imageURL;
+    String navStatus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,10 +55,13 @@ public class NavigationActivity extends AppCompatActivity {
         Log.e("SearchQuery", query+ " is null?");
         tv = findViewById(R.id.textView);
         ImageView imageView=findViewById(R.id.mapImage);
+        //navStatus=new HashMap<>();
         Navigate navigate = new Navigate();
         navigate.execute();
 
+
     }
+
 
     public class Navigate extends AsyncTask<String,String,String>
     {
@@ -66,8 +71,14 @@ public class NavigationActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
             //REST Query
+            int i=0;
             try {
-                imageURL=callAPI(query);
+                //do {
+                    navStatus=callAPI(query);
+                    Log.e("Order","After callAPI.Data is "+navStatus);
+                    publishProgress(navStatus);
+                    i++;
+               // }while(i==2);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -77,7 +88,7 @@ public class NavigationActivity extends AppCompatActivity {
 
             //ToDo: If imageURL is null then server is down probably
             Log.e("Data ","Data is"+imageURL);
-            return imageURL;
+            return "none";
         }
 
         @Override
@@ -90,16 +101,28 @@ public class NavigationActivity extends AppCompatActivity {
 
         }
 
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            progressDialog.dismiss();
+            Toast.makeText(getApplicationContext(), "onProgressUpdate",Toast.LENGTH_SHORT).show();
+            mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
+            mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
+            mImageLoader.get(values[0], ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
+            mNetworkImageView.setImageUrl(values[0], mImageLoader);
+        }
+
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressDialog.dismiss();
             tv.setText(s+query);
             Log.e("Data ","Data is"+s);
-                mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
-                mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
-                mImageLoader.get(s, ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
-                mNetworkImageView.setImageUrl(s, mImageLoader);
+//                mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
+//                mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
+//                mImageLoader.get(s, ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
+//                mNetworkImageView.setImageUrl(s, mImageLoader);
 
         }
     }
@@ -147,8 +170,9 @@ public class NavigationActivity extends AppCompatActivity {
         String imageLink= response.toString();
         Log.e("In callAPI", imageLink);
         imageLink = new JSONObject(imageLink).getString("response");
-        Log.e("In callAPI",imageLink);
+        Log.e("Order","Step-1");
         return imageLink;
+
 
     }
 
@@ -181,7 +205,7 @@ public class NavigationActivity extends AppCompatActivity {
     }
 
     private String getNearestBeacon() {
-        //ToDo: Garvit is doing this
+
 
 
         return "1";
@@ -191,12 +215,14 @@ public class NavigationActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Toast.makeText(getApplicationContext(),"OnStart STarted",Toast.LENGTH_LONG).show();
+        Log.e("Order","Step-2");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Toast.makeText(getApplicationContext(),"OnResume STarted",Toast.LENGTH_LONG).show();
+        Log.e("Order","Step-2");
     }
 }
 
