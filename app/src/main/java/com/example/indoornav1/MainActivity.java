@@ -3,6 +3,7 @@ package com.example.indoornav1;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BaseBundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -37,6 +38,10 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -155,11 +160,28 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
+    String bid;
     private void volleyGETRequest(String searchQuery) throws JSONException {
-        Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
-        intent.putExtra("payload",searchQuery);
-        startActivity(intent);
+
+        final Intent intent = new Intent(MainActivity.this, NavigationActivity.class);
+        Log.e("MainActivity","Search Query is "+searchQuery);
+        FirebaseDatabase.getInstance().getReference().child(searchQuery).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.e("MainActivity","Inside onDataChange");
+                bid=dataSnapshot.getValue(String.class);
+
+                intent.putExtra("payload",bid);
+                Log.e("In onDataChange"," Bid is "+bid);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
 
     }
 
@@ -191,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
     private  void selectItemFromDrawer(int position) {
 
         if(position ==0){
+
             Intent i = new Intent(MainActivity.this, MainActivity.class);
             startActivity(i);
         }

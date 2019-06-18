@@ -3,6 +3,7 @@ package com.example.indoornav1;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,7 +40,8 @@ public class NavigationActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     public TextView tv;
     public ImageView imageView;
-    public String query;
+    public String start;
+    public String end;
     DatabaseReference databaseReference;
     DataSnapshot dataSnapshot;
     private NetworkImageView mNetworkImageView;
@@ -51,13 +53,16 @@ public class NavigationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-        query=getIntent().getStringExtra("payload");
-        Log.e("SearchQuery", query+ " is null?");
+        //start=getNearestBeacon();
+        start="bid1";
+
+        end=getIntent().getStringExtra("payload");
+        Log.e("SearchQuery", end+ " is null?");
         tv = findViewById(R.id.textView);
-        ImageView imageView=findViewById(R.id.mapImage);
+        //ImageView imageView=findViewById(R.id.mapImage);
         //navStatus=new HashMap<>();
         Navigate navigate = new Navigate();
-        navigate.execute();
+        navigate.execute(start,end);
 
 
     }
@@ -73,12 +78,18 @@ public class NavigationActivity extends AppCompatActivity {
             //REST Query
             int i=0;
             try {
-                //do {
-                    navStatus=callAPI(query);
+
+                do{
+                    if(strings[0]==strings[1]) {//exit the loop
+                    }
+                    navStatus=callAPI(strings[0],strings[1]);
                     Log.e("Order","After callAPI.Data is "+navStatus);
+                    //For Testing Purpose
+                    if(i==1){ navStatus="https://res.infoq.com/presentations/rest-api-testing-postman/en/slides/sl1-1542245696017.jpg";}
+                    if(i==2){navStatus="https://octoperf.com/img/blog/jmeter-rest-api-testing/jmeter-rest-api-testing.jpg";}
                     publishProgress(navStatus);
                     i++;
-               // }while(i==2);
+               }while(i<3);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -95,7 +106,7 @@ public class NavigationActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(NavigationActivity.this);
-            progressDialog.setMessage("Please Wait");
+            progressDialog.setMessage("Maps Loading");
             progressDialog.setCancelable(false);
             progressDialog.show();
 
@@ -110,6 +121,7 @@ public class NavigationActivity extends AppCompatActivity {
             mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
             mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
             mImageLoader.get(values[0], ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
+            Log.e("Image Published", values[0]);
             mNetworkImageView.setImageUrl(values[0], mImageLoader);
         }
 
@@ -117,7 +129,7 @@ public class NavigationActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressDialog.dismiss();
-            tv.setText(s+query);
+            tv.setText(s);
             Log.e("Data ","Data is"+s);
 //                mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
 //                mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
@@ -129,12 +141,8 @@ public class NavigationActivity extends AppCompatActivity {
 
 
 
-    private String callAPI(String query) throws IOException, JSONException {
-        String start,end;
-        Log.e("Inside CallAPI",query);
-        start=getNearestBeacon();
-        end=getDestination(query);
-        start="bid1";
+    private String callAPI(String start,String end) throws IOException, JSONException {
+        Log.e("Inside CallAPI",start);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("src",start);
@@ -176,33 +184,6 @@ public class NavigationActivity extends AppCompatActivity {
 
     }
 
-
-    int check=0; //For Dealing with asynchronous call of onDataChange
-    //Refer https://stackoverflow.com/questions/43594826/firebase-how-to-return-data
-    private String getDestination(String query) {
-        //Alternative way instead of creating variables
-        //addListnerforSingleValueEvent: retrives the value only once
-        //ToDo: Change Inox to Query String below
-        FirebaseDatabase.getInstance().getReference().child(query).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                bid=dataSnapshot.getValue(String.class);
-                Log.e("In onDataChange"," Bid is "+bid);
-                check=1;
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        while(check==0){
-            Log.e("In onDataChange","Waiting...");
-        }
-            Log.e("In getDestination","Query is "+query+" Bid is "+bid);
-        return bid;
-    }
 
     private String getNearestBeacon() {
 
