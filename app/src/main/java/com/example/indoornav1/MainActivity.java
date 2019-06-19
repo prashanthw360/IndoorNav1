@@ -173,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
                 intent.putExtra("payload",bid);
                 Log.e("In onDataChange"," Bid is "+bid);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
             }
 
@@ -219,13 +220,16 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Yet to come", Toast.LENGTH_SHORT).show();
 
         } else if (position == 2) {
-
+           Intent intent = new Intent(MainActivity.this, CouponActivity.class);
+           startActivity(intent);
 
         }
 
         mDrawerLayout.closeDrawer(mDrawerPane);
 
     }
+
+
 }
 
 

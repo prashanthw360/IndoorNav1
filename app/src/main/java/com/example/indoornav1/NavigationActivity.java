@@ -49,6 +49,8 @@ public class NavigationActivity extends AppCompatActivity {
     String bid; //ToDo: To be changed to String
     String imageURL;
     String navStatus;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -221,6 +223,8 @@ public class NavigationActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(),"OnResume STarted",Toast.LENGTH_LONG).show();
         Log.e("Order","Step-2");
     }
+
+
 }
 
 
