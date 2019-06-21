@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -63,6 +65,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     String imageURL;
     String navStatus;
     private BeaconManager beaconManager;
+    Navigate navigate;
 
 
 
@@ -70,7 +73,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-        //start=getNearestBeacon();
 
         beaconManager = BeaconManager.getInstanceForApplication(this);
 
@@ -82,22 +84,15 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         //Binding MainActivity to the BeaconService.
         beaconManager.bind(this);
         string2="2";
-
-
-
-        //start="bid1";
-
+        ImageView imageView=findViewById(R.id.mapImage);
         end=getIntent().getStringExtra("payload");
         Log.e("SearchQuery", end+ " is null?");
         tv = findViewById(R.id.textView);
-        //ImageView imageView=findViewById(R.id.mapImage);
-        //navStatus=new HashMap<>();
-        Navigate navigate = new Navigate();
+        navigate = new Navigate();
         navigate.execute("bid1",end);
 
 
     }
-
 
     public class Navigate extends AsyncTask<String,String,String>
     {
@@ -106,38 +101,27 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
 
         @Override
         protected String doInBackground(String... strings) {
-            //REST Query
             String cs,ps=null;
             try {
-
-                //The Below statement will run as follows
-                /*
-                If cs(current state of nearest beacon) will be equal to ps, then no beacon will be loaded
-                At (1) the value of cs changes then cs!=ps. In this case a new beacon will be detected and location will be updated
-
-                //Dont get confused with  (2) and (1), Later modify the statement such that only end bid is passed to the asynctask
-                //(3): When no beacon is recognised, nothing is done, just the loop is contunued so that a value might be read
-                 */
-
-                    while(!strings[0].equals(strings[1])) {
+                    //while(!string2.equals(strings[1]) ) {
                         Log.e("NavigationActivity","UUID "+string2);
                         tv.setText(string2);
-                        cs=strings[0];  //---(2)
+                        cs=string2;  //---(2)
                         //ToDo: Uncomment the below statement later
-                        //cs=getNearestBeacon();  //----(1)
-                        if(cs.equals(ps) || cs == null)  //-->(3)
-                            continue;
+                        if(cs.equals(ps)) {
+                            if(navStatus==null)
+                            {
+                                Log.e("NavigationActivity", "NavStatus null");
+                            }
+                        }
                         else {
-                            navStatus = callAPI(strings[0], strings[1]);
+                            navStatus = callAPI("bid1", "bid3");
                             Log.e("Order", "After callAPI.Data is " + navStatus);
-                            //                    //For Testing Purpose
-                            //                    if(i==1){ navStatus="https://res.infoq.com/presentations/rest-api-testing-postman/en/slides/sl1-1542245696017.jpg";}
-                            //                    if(i==2){navStatus="https://octoperf.com/img/blog/jmeter-rest-api-testing/jmeter-rest-api-testing.jpg";}
-                            ps=cs;
+                            ps = cs;
                             publishProgress(navStatus);
                         }
-                    }
 
+                 //   }
 
 
             } catch (IOException e) {
@@ -151,43 +135,44 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
             return "none";
         }
 
+
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(NavigationActivity.this);
-            progressDialog.setMessage("Maps Loading");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
+            imageView = findViewById(R.id.mapImage);
 
 
         }
-
 
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
-            progressDialog.dismiss();
+            publishImage(values[0]);
+
+        }
+
+        private void publishImage(String value) {
+
             Toast.makeText(getApplicationContext(), "onProgressUpdate",Toast.LENGTH_SHORT).show();
             mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
             mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
-            mImageLoader.get(values[0], ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
-            Log.e("Image Published", values[0]);
-            mNetworkImageView.setImageUrl(values[0], mImageLoader);
+            mImageLoader.get(value, ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
+            Log.e("Image Published", value);
+            mNetworkImageView.setImageUrl(value, mImageLoader);
         }
+
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            progressDialog.dismiss();
-          //  tv.setText(s);
 
             Log.e("Data ","Data is"+s);
-//                mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
-//                mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
-//                mImageLoader.get(s, ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
-//                mNetworkImageView.setImageUrl(s, mImageLoader);
 
         }
+
+
     }
 
 
@@ -247,18 +232,20 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     protected void onStart() {
         super.onStart();
         Toast.makeText(getApplicationContext(),"OnStart STarted",Toast.LENGTH_LONG).show();
-        Log.e("Order","Step-2");
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Toast.makeText(getApplicationContext(),"OnResume STarted",Toast.LENGTH_LONG).show();
-        Log.e("Order","Step-2");
     }
 
-
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
+    }
 
     @Override
     public void onBeaconServiceConnect() {
@@ -370,7 +357,10 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     public void onDestroy() {
         super.onDestroy();
         //Unbinds an Android Activity or Service to the BeaconService to avoid leak.
+        Log.e("On Destroyed Called","Here");
         beaconManager.unbind(this);
+        finish();
+
     }
 
 
