@@ -29,6 +29,8 @@
             app:layout_constraintVertical_bias="0.013"
             app:srcCompat="@drawable/indoor_nav_bg" />
 
+
+
         <TextView
             android:id="@+id/textView"
             android:layout_width="match_parent"

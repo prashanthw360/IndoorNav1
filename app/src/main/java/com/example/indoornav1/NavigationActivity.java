@@ -100,38 +100,23 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
 
         @Override
         protected String doInBackground(String... strings) {
-            String cs,ps=null;
             try {
-                    //while(!string2.equals(strings[1]) ) {
-                        Log.e("NavigationActivity","UUID "+string2);
-                        tv.setText(string2);
-                        cs=string2;  //---(2)
-                        //ToDo: Uncomment the below statement later
-                        if(cs.equals(ps)) {
-                            if(navStatus==null)
-                            {
-                                Log.e("NavigationActivity", "NavStatus null");
-                            }
-                        }
-                        else {
-                            navStatus = callAPI("bid1", "bid3");
-                            Log.e("Order", "After callAPI.Data is " + navStatus);
-                            ps = cs;
-                            publishProgress(navStatus);
-                        }
+                Log.e("NavigationActivity", "UUID " + string2);
+                tv.setText(string2);
+                navStatus = callAPI("bid1", "bid3");
+                Log.e("Order", "After callAPI.Data is " + navStatus);
+                publishProgress(navStatus);
 
-                 //   }
-
-
-            } catch (IOException e) {
+            }
+             catch(IOException e) {
                 e.printStackTrace();
-            } catch (JSONException e) {
+            } catch(JSONException e) {
                 e.printStackTrace();
             }
-
-            //ToDo: If imageURL is null then server is down probably
             Log.e("Data ","Data is"+imageURL);
-            return "none";
+            if(string2.equals(end))
+                return "Done";
+            return "None";
         }
 
 
@@ -141,6 +126,8 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
             super.onPreExecute();
             progressDialog = new ProgressDialog(NavigationActivity.this);
             imageView = findViewById(R.id.mapImage);
+            progressDialog.setMessage("Loading Maps");
+            progressDialog.show();
 
 
         }
@@ -148,6 +135,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
+            progressDialog.dismiss();
             publishImage(values[0]);
 
         }
@@ -166,7 +154,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-
+            Toast.makeText(getApplicationContext(), "OnPostExecute", Toast.LENGTH_SHORT).show();
             Log.e("Data ","Data is"+s);
 
         }
@@ -352,6 +340,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
 
     private void fetchImage(String string2) {
         if(navigate.getStatus()==AsyncTask.Status.RUNNING) {
+            Log.e("New Beacon Detected ", string2);
             navigate.execute(string2,end);
         }
     }

@@ -2,6 +2,7 @@ package com.example.indoornav1;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +46,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -55,6 +58,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+
+
 
 class NavItem {
     String mTitle;
@@ -104,6 +110,7 @@ class DrawerListAdapter extends BaseAdapter{
 
         TextView titleView = (TextView) view.findViewById(R.id.title);
         ImageView iconView = (ImageView) view.findViewById(R.id.icon);
+
         TextView subtitleView = (TextView) view.findViewById(R.id.subTitle);
         titleView.setText( mNavItems.get(position).mTitle );
         subtitleView.setText( mNavItems.get(position).mSubtitle );
@@ -116,6 +123,8 @@ class DrawerListAdapter extends BaseAdapter{
 public class MainActivity extends AppCompatActivity {
 
 
+    public static ProgressDialog progressDialog;
+
         ArrayList<NavItem> mNavItems = new ArrayList<NavItem>();
           RelativeLayout mDrawerPane;
     ListView mDrawerList;
@@ -124,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchBox;
     Button goButton;
     String searchQuery;
+    ImageView imageView;
     private NetworkImageView mNetworkImageView;
     private ImageLoader mImageLoader;
 
@@ -150,19 +160,25 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList = (ListView) findViewById(R.id.navList);
         DrawerListAdapter adapter = new DrawerListAdapter(this, mNavItems);
         mDrawerList.setAdapter(adapter);
+        progressDialog=new ProgressDialog(MainActivity.this);
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Loading...");
 
         // Drawer Item click listeners
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 selectItemFromDrawer(position);
+
             }
         });
 
-        //Hamburger Icon
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("The Troshos");
 
-        //EditText
+
+
+
 
 
 
@@ -184,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("payload",bid);
                 Log.e("In onDataChange"," Bid is "+bid);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                progressDialog.dismiss();
                 startActivity(intent);
             }
 
@@ -211,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
                     while(searchQuery == null)
                         searchQuery=searchBox.getText().toString();
                     startNavigation(searchQuery);
+                    progressDialog.show();
                     searchQuery=null;
                 } catch (JSONException e) {
                     e.printStackTrace();
