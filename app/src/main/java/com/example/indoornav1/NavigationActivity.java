@@ -1,28 +1,24 @@
 package com.example.indoornav1;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -35,37 +31,31 @@ import org.altbeacon.beacon.service.ArmaRssiFilter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+
+import static javax.xml.transform.OutputKeys.MEDIA_TYPE;
 
 public class NavigationActivity extends AppCompatActivity implements BeaconConsumer {
     ProgressDialog progressDialog;
     public TextView tv;
-    public ImageView imageView;
+
     public String start;
     public String end;
     public String string2;
     public String string2old;
-    private NetworkImageView mNetworkImageView;
-    private ImageLoader mImageLoader;
     String bid; //ToDo: To be changed to String
     String imageURL;
     String navStatus;
     private BeaconManager beaconManager;
-    Navigate navigate;
-
+    RequestQueue queue;
+    ImageView imageView;
 
 
     @Override
@@ -82,143 +72,83 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
 
         //Binding MainActivity to the BeaconService.
         beaconManager.bind(this);
-        string2="2";
-        ImageView imageView=findViewById(R.id.mapImage);
+        string2="No Nearby Beacon Found";
         end=getIntent().getStringExtra("payload");
-        Log.e("SearchQuery", end+ " is null?");
+        Toast.makeText(getApplicationContext(), end, Toast.LENGTH_SHORT).show();
+        Log.e("EndBID", "End BID "+end);
         tv = findViewById(R.id.textView);
-        navigate = new Navigate();
-        navigate.execute("bid1",end);
-
-
-    }
-
-    public class Navigate extends AsyncTask<String,String,String>
-    {
-
-
-
-        @Override
-        protected String doInBackground(String... strings) {
-            try {
-                Log.e("NavigationActivity", "UUID " + string2);
-                tv.setText(string2);
-                navStatus = callAPI("bid1", "bid3");
-                Log.e("Order", "After callAPI.Data is " + navStatus);
-                publishProgress(navStatus);
-
-            }
-             catch(IOException e) {
-                e.printStackTrace();
-            } catch(JSONException e) {
-                e.printStackTrace();
-            }
-            Log.e("Data ","Data is"+imageURL);
-            if(string2.equals(end))
-                return "Done";
-            return "None";
-        }
-
-
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressDialog = new ProgressDialog(NavigationActivity.this);
-            imageView = findViewById(R.id.mapImage);
-            progressDialog.setMessage("Loading Maps");
-            progressDialog.show();
-
-
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            progressDialog.dismiss();
-            publishImage(values[0]);
-
-        }
-
-        private void publishImage(String value) {
-
-            Toast.makeText(getApplicationContext(), "onProgressUpdate",Toast.LENGTH_SHORT).show();
-            mNetworkImageView = (NetworkImageView) findViewById(R.id.mapImage);
-            mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext()).getImageLoader();
-            mImageLoader.get(value, ImageLoader.getImageListener(mNetworkImageView, R.mipmap.ic_launcher_round, android.R.drawable.ic_menu_report_image));
-            Log.e("Image Published", value);
-            mNetworkImageView.setImageUrl(value, mImageLoader);
-        }
-
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Toast.makeText(getApplicationContext(), "OnPostExecute", Toast.LENGTH_SHORT).show();
-            Log.e("Data ","Data is"+s);
-
-        }
-
+        ;
+        queue= Volley.newRequestQueue(this);
 
     }
 
 
-
-    private String callAPI(String start,String end) throws IOException, JSONException {
-        Log.e("Inside CallAPI",start);
+    private void callAPI(final VolleyCallback volleyCallback, String start, String end) throws JSONException {
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("src",start);
-            jsonObject.put("dest",end);
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+        if(start.equals("No Nearby Beacon Found")){
+            volleyCallback.onSuccess("https://en.wikipedia.org/wiki/Blue_rose#/media/File:Blue_rose-artificially_coloured.jpg");
+        }else {
+
+            jsonObject.put("src", start);
+            jsonObject.put("dest", end);
+            Log.e("Start and End is ", start + " " + end);
+            String url = "https://suhas-api.herokuapp.com/map";
+            JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.e("Response is ", response.toString());
+                            try {
+                                volleyCallback.onSuccess(response.getString("response"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("Error is ", error.toString());
+                }
+            });
+
+            queue.add(postRequest);
         }
-        URL url=new URL("https://suhas-api.herokuapp.com/map");
-        HttpURLConnection connection= (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type","application/json");
-        connection.setRequestProperty("Content-Length", String.valueOf(jsonObject.toString().getBytes().length));
-        connection.setRequestProperty("Cache-Control", "no-cache");
-        connection.setRequestProperty("Content-Language", "en-US");
-        //Send Request
-        OutputStream outputStream = connection.getOutputStream();
-        outputStream.write(jsonObject.toString().getBytes());
-        outputStream.flush();
-        outputStream.close();
+    }
 
-        //Get Response
-        InputStream is = connection.getInputStream();
-        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-        String line;
-        StringBuffer response = new StringBuffer();
-        while ((line = rd.readLine()) != null) {
-            response.append(line);
-            response.append('\r');
-        }
-        rd.close();
-
-
-        String imageLink= response.toString();
-        Log.e("In callAPI", imageLink);
-        imageLink = new JSONObject(imageLink).getString("response");
-        Log.e("Order","Step-1");
-        return imageLink;
-
-
+    public interface VolleyCallback{
+        void onSuccess(String result);
     }
 
 
-    private String getNearestBeacon() {
 
 
 
-        return "1";
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Toast.makeText(getApplicationContext(),"OnStart STarted",Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(),"OnStart Started",Toast.LENGTH_LONG).show();
+
+        try {
+            callAPI(new VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    tv.setText(string2);
+                    imageView=findViewById(R.id.mapImage);
+                    Log.e("Image Published", result);
+                    Glide.with(getApplicationContext())
+                            .load(result)
+                            .placeholder(R.drawable.common_google_signin_btn_icon_dark_normal_background)
+                            .error(R.drawable.common_google_signin_btn_icon_dark)
+                            .into(imageView);
+
+                }
+            }, string2,end);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -321,7 +251,25 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                                 string2 = b1.getId1().toString();
                                 tv.setText(string2);
                                 if(!string2.equals(string2old)){
-                                    fetchImage(string2);
+                                    try {
+                                        callAPI(new VolleyCallback() {
+                                            @Override
+                                            public void onSuccess(String result) {
+                                                tv.setText(string2);
+                                                imageView=findViewById(R.id.mapImage);
+                                                Log.e("Image Published", result);
+                                                Toast.makeText(getApplicationContext(), "Beacon Change "+string2, Toast.LENGTH_LONG).show();
+                                                Glide.with(getApplicationContext())
+                                                        .load(result)
+                                                        .placeholder(R.drawable.common_google_signin_btn_icon_dark_normal_background)
+                                                        .error(R.drawable.common_google_signin_btn_icon_dark)
+                                                        .into(imageView);
+
+                                            }
+                                        }, string2, end);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                     string2old=string2;
                                 }
                                 Log.e("NavigationActivity","UUID "+string2);
@@ -339,12 +287,12 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         }
     }
 
-    private void fetchImage(String string2) {
-        if(navigate.getStatus()==AsyncTask.Status.RUNNING) {
-            Log.e("New Beacon Detected ", string2);
-            navigate.execute(string2,end);
-        }
-    }
+//    private void fetchImage(String string2) {
+//        if(navigate.getStatus()==AsyncTask.Status.RUNNING) {
+//            Log.e("New Beacon Detected ", string2);
+//            navigate.execute(string2,end);
+//        }
+//    }
 
     @Override
     public void onDestroy() {

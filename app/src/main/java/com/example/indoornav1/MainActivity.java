@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -147,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         checkPermission();
+        BluetoothAdapter b = BluetoothAdapter.getDefaultAdapter();
+        b.enable();
 
         setContentView(R.layout.activity_main);
         //NavigationBar
@@ -203,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("In onDataChange"," Bid is "+bid);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 progressDialog.dismiss();
+                Log.e("Firebase", bid);
                 startActivity(intent);
             }
 
@@ -318,6 +322,8 @@ public class MainActivity extends AppCompatActivity {
             ((ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE))
                     .clearApplicationUserData();
             Log.e("Data Destroyed", "onDestroy");
+            BluetoothAdapter b = BluetoothAdapter.getDefaultAdapter();
+            b.disable();
             finish();
         }
     }

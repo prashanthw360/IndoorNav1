@@ -189,6 +189,7 @@ public class CouponActivity extends AppCompatActivity {
             connection.setRequestProperty("Content-Length", String.valueOf(jsonObject.toString().getBytes().length));
             connection.setRequestProperty("Cache-Control", "no-cache");
             connection.setRequestProperty("Content-Language", "en-US");
+
             //Send Request
             OutputStream outputStream = null;
             try {
