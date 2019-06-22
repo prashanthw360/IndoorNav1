@@ -87,7 +87,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         JSONObject jsonObject = new JSONObject();
 
         if(start.equals("No Nearby Beacon Found")){
-            volleyCallback.onSuccess("https://en.wikipedia.org/wiki/Blue_rose#/media/File:Blue_rose-artificially_coloured.jpg");
+            volleyCallback.onSuccess("https://xbosoft.com/wp-content/uploads/2017/09/API-Testing-Services_1-400x304.jpg");
         }else {
 
             jsonObject.put("src", start);
