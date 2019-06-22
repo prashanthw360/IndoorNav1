@@ -309,7 +309,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                     for (Beacon b : beacons) {
                         //RSSI
                         count += 1;
-                        System.out.println("Count : " + count);
+                        Log.e("Count : " ," "+count);
                         Integer rssi = Integer.valueOf(b.getRssi());
                         arr.add(rssi);
 
@@ -319,6 +319,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                             if(b1.getRssi() == maxRssi)
                             {
                                 string2 = b1.getId1().toString();
+                                tv.setText(string2);
                                 if(!string2.equals(string2old)){
                                     fetchImage(string2);
                                     string2old=string2;
@@ -350,7 +351,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         super.onDestroy();
         Log.e("On Destroyed Called","Here");
         beaconManager.unbind(this);
-        finish();
 
     }
 

@@ -2,6 +2,7 @@ package com.example.indoornav1;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.BaseBundle;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -277,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Code for prompting coarse location
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -285,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // If Permission is Granted than its ok
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
 
                 }
 
@@ -307,7 +311,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT) {
+            ((ActivityManager) getApplicationContext().getSystemService(ACTIVITY_SERVICE))
+                    .clearApplicationUserData();
+            Log.e("Data Destroyed", "onDestroy");
+            finish();
+        }
+    }
 }
 
 
