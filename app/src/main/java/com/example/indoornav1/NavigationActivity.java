@@ -57,8 +57,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     public String start;
     public String end;
     public String string2;
-    DatabaseReference databaseReference;
-    DataSnapshot dataSnapshot;
+    public String string2old;
     private NetworkImageView mNetworkImageView;
     private ImageLoader mImageLoader;
     String bid; //ToDo: To be changed to String
@@ -235,11 +234,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Toast.makeText(getApplicationContext(),"OnResume STarted",Toast.LENGTH_LONG).show();
-    }
 
     @Override
     protected void onStop() {
@@ -303,7 +297,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         });
 
        final String TAG="onBeacon";
-
         //Specifies a class that should be called each time the BeaconService gets ranging data,
         // which is nominally once per second when beacons are detected.
         beaconManager.addRangeNotifier(new RangeNotifier() {
@@ -338,7 +331,11 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                             if(b1.getRssi() == maxRssi)
                             {
                                 string2 = b1.getId1().toString();
-                               Log.e("NavigationActivity","UUID "+string2);
+                                if(!string2.equals(string2old)){
+                                    fetchImage(string2);
+                                    string2old=string2;
+                                }
+                                Log.e("NavigationActivity","UUID "+string2);
                             }
                         }
                     }
@@ -353,10 +350,15 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         }
     }
 
+    private void fetchImage(String string2) {
+        if(navigate.getStatus()==AsyncTask.Status.RUNNING) {
+            navigate.execute(string2,end);
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //Unbinds an Android Activity or Service to the BeaconService to avoid leak.
         Log.e("On Destroyed Called","Here");
         beaconManager.unbind(this);
         finish();
