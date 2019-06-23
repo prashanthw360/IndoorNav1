@@ -1,24 +1,21 @@
 package com.example.indoornav1;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -31,20 +28,13 @@ import org.altbeacon.beacon.service.ArmaRssiFilter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
-
-import static javax.xml.transform.OutputKeys.MEDIA_TYPE;
 
 public class NavigationActivity extends AppCompatActivity implements BeaconConsumer {
     ProgressDialog progressDialog;
-    public TextView tv;
 
     public String start;
     public String end;
@@ -55,7 +45,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     String navStatus;
     private BeaconManager beaconManager;
     RequestQueue queue;
-    ImageView imageView;
+    PhotoView imageView;
 
 
     @Override
@@ -76,8 +66,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         end=getIntent().getStringExtra("payload");
         Toast.makeText(getApplicationContext(), end, Toast.LENGTH_SHORT).show();
         Log.e("EndBID", "End BID "+end);
-        tv = findViewById(R.id.textView);
-        ;
         queue= Volley.newRequestQueue(this);
 
     }
@@ -134,7 +122,6 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
             callAPI(new VolleyCallback() {
                 @Override
                 public void onSuccess(String result) {
-                    tv.setText(string2);
                     imageView=findViewById(R.id.mapImage);
                     Log.e("Image Published", result);
                     Glide.with(getApplicationContext())
@@ -249,13 +236,12 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                             if(b1.getRssi() == maxRssi)
                             {
                                 string2 = b1.getId1().toString();
-                                tv.setText(string2);
                                 if(!string2.equals(string2old)){
                                     try {
                                         callAPI(new VolleyCallback() {
                                             @Override
                                             public void onSuccess(String result) {
-                                                tv.setText(string2);
+                                                string2old=string2;
                                                 imageView=findViewById(R.id.mapImage);
                                                 Log.e("Image Published", result);
                                                 Toast.makeText(getApplicationContext(), "Beacon Change "+string2, Toast.LENGTH_LONG).show();
@@ -264,6 +250,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                                                         .placeholder(R.drawable.common_google_signin_btn_icon_dark_normal_background)
                                                         .error(R.drawable.common_google_signin_btn_icon_dark)
                                                         .into(imageView);
+
 
                                             }
                                         }, string2, end);
