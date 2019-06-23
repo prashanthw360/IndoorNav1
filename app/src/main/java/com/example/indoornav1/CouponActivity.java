@@ -1,58 +1,51 @@
 package com.example.indoornav1;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.BottomNavigationView;
+import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.MonitorNotifier;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
+import org.altbeacon.beacon.service.ArmaRssiFilter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
-public class CouponActivity extends AppCompatActivity {
+public class CouponActivity extends AppCompatActivity implements BeaconConsumer {
 
-    public class CouponsAdapter extends RecyclerView.Adapter<CouponsAdapter.ViewHolder> {
+    public class CouponsAdapter extends RecyclerView.Adapter<CouponsAdapter.ViewHolder>{
 
 
         private List<Coupons> couponsList;
@@ -113,13 +106,25 @@ public class CouponActivity extends AppCompatActivity {
     String ctl;
     String cdesc;
     String bid;
-    CallREST callREST;
     String backgroundResponse;
     private List<Coupons> couponList = new ArrayList<>();
+    String oldbid;
+    private BeaconManager beaconManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        oldbid="none";
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+
+        // To detect proprietary beacons, you must add a line like below corresponding to your beacon
+        // type.  Do a web search for "setBeaconLayout" to get the proper expression.
+        beaconManager.getBeaconParsers().add(new BeaconParser().
+                setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
+
+        //Binding MainActivity to the BeaconService.
+        beaconManager.bind(this);
+
         getSupportActionBar().setTitle("Coupons and Premiums");
         setContentView(R.layout.activity_coupon);
         recyclerView = findViewById(R.id.coupon);
@@ -132,145 +137,232 @@ public class CouponActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(mLayoutManager); //ToDo: GridLayoutManager and Item Animator
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(couponsAdapter);
-        bid = "Get the bid here";
+        bid = "No Nearby Beacon Found";
         //ToDO: when you get the bid, check if the bid is present in arrayList or not, if present ,reorder it so that latest bid comes first
 
-        callREST = new CallREST();
-        bid = "5";
-        callREST.execute(bid);
+        Log.e("Details ", "Start Here");
 
 
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callREST = new CallREST();
-                Snackbar.make(v, "Reloading Goodies", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                callREST.execute(bid);
-            }
-        });
+
+
+//        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                callREST = new CallREST();
+//                Snackbar.make(v, "Reloading Goodies", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//                callREST.execute(bid);
+//            }
+//        });
+
+
+
 
 
     }
 
-    public class CallREST extends AsyncTask<String, String, String> {
+    @Override
+    public void onBeaconServiceConnect() {
 
+        //Constructing a new Region object to be used for Ranging or Monitoring
+        final Region region = new Region("myBeaons", null, null, null);
 
-        @Override
-        protected String doInBackground(String... strings) {
-            bid = strings[0];
-            Log.e("CouponActivity", "DIB " + bid);
-            if(isCancelled())
-                return "Cancelled";
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("bid", bid);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            URL url = null;
-            try {
-                url = new URL("https://suhas-api.herokuapp.com/marketing");
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            HttpURLConnection connection = null;
-            try {
-                connection = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                connection.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Content-Length", String.valueOf(jsonObject.toString().getBytes().length));
-            connection.setRequestProperty("Cache-Control", "no-cache");
-            connection.setRequestProperty("Content-Language", "en-US");
+        //Specifies a class that should be called each time the BeaconService sees or stops seeing a Region of beacons.
+        beaconManager.addMonitorNotifier(new MonitorNotifier() {
 
-            //Send Request
-            OutputStream outputStream = null;
-            try {
-                outputStream = connection.getOutputStream();
-                outputStream.write(jsonObject.toString().getBytes());
-                outputStream.flush();
-                outputStream.close();
-                InputStream is = connection.getInputStream();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-                String line;
-                StringBuffer response = new StringBuffer();
+            /*
+                This override method is runned when some beacon will come under the range of device.
+            */
+            @Override
+            public void didEnterRegion(Region region) {
+                System.out.println("ENTER ------------------->");
+                try {
 
-                while ((line = rd.readLine()) != null) {
-                    response.append(line);
-                    response.append('\r');
+                    //Tells the BeaconService to start looking for beacons that match the passed Region object
+                    // , and providing updates on the estimated mDistance every seconds while beacons in the Region
+                    // are visible.
+                    beaconManager.startRangingBeaconsInRegion(region);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-                rd.close();
-                Log.e("CouponActivity", "DIB2 " + response.toString());
-//                publishProgress(response.toString());
-                backgroundResponse = response.toString();
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            return backgroundResponse;
 
+            /*
+                 This override method is runned when beacon that comes in the range of device
+                 ,now been exited from the range of device.
+             */
+            @Override
+            public void didExitRegion(Region region) {
+                System.out.println("EXIT----------------------->");
+                try {
 
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressDialog = new ProgressDialog(CouponActivity.this);
-            progressDialog.setMessage("Goodies on the way!");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            //couponList = new ArrayList<>();
-            progressDialog.dismiss();
-            Log.e("CouponsActivity", "onPostExecute " + s);
-            try {
-                JSONObject jsonObject = new JSONObject(s).getJSONObject("response");
-                Log.e("CouponsActivity", jsonObject.toString());
-                ad = jsonObject.getString("ads");
-                ctl = jsonObject.getString("cname");
-                cdesc = jsonObject.getString("coupons");
-                Coupons coupons = new Coupons(ctl, cdesc);
-                if (!couponList.contains(coupons))
-                    couponList.add(coupons);
-                textView.setText(ad);
-
-                couponsAdapter.notifyDataSetChanged();
-                cancel(true);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    //Tells the BeaconService to stop looking for beacons
+                    // that match the passed Region object and providing mDistance
+                    // information for them.
+                    beaconManager.stopRangingBeaconsInRegion(region);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
 
 
-        }
+            /*
+                 This override method will Determine the state for the device , whether device is in range
+               of beacon or not , if yes then i = 1 and if no then i = 0
+            */
+            @Override
+            public void didDetermineStateForRegion(int state, Region region) {
+                System.out.println("I have just switched from seeing/not seeing beacons: " + state);
+            }
+        });
 
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
+        final String TAG="onBeacon";
+        //Specifies a class that should be called each time the BeaconService gets ranging data,
+        // which is nominally once per second when beacons are detected.
+        beaconManager.addRangeNotifier(new RangeNotifier() {
 
-        }
+            /*
+               This Override method tells us all the collections of beacons and their details that
+               are detected within the range by device
+             */
+            @Override
+            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+                Log.e(TAG, "inside beacon1");
+                // Checking if the Beacon inside the collection (ex. list) is there or not
 
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            callREST.cancel(true);
+                // if Beacon is detected then size of collection is > 0
+                if (beacons.size() > 0) {
+
+                    final ArrayList<ArrayList<String>> arrayList = new ArrayList<ArrayList<String>>();
+                    BeaconManager.setRssiFilterImplClass(ArmaRssiFilter.class);
+                    // Iterating through all Beacons from Collection of Beacons
+                    ArrayList<Integer> arr = new ArrayList<Integer>();
+                    int count = 0;
+                    for (Beacon b : beacons) {
+                        //RSSI
+                        count += 1;
+                        Log.e("Count : " ," "+count);
+                        Integer rssi = Integer.valueOf(b.getRssi());
+                        arr.add(rssi);
+
+                        Integer maxRssi = Collections.max(arr);
+                        for(Beacon b1 : beacons){
+
+                            if(b1.getRssi() == maxRssi) {
+                                bid = b1.getId1().toString();
+                                if (!oldbid.equals(bid)) {
+                                    try {
+
+                                        callAPI(new couponCallBack() {
+                                            @Override
+                                            public void onSuccess(String ads, String cname, String result) {
+                                                Log.e("Details are ", ads + cname + result);
+                                                Coupons coupons = new Coupons(cname, result);
+                                                if (!couponList.contains(coupons)) {
+                                                    couponList.add(coupons);
+                                                    Toast.makeText(getApplicationContext(), "No new Coupon added", Toast.LENGTH_SHORT).show();
+                                                }
+                                                textView.setText(ads);
+                                                couponsAdapter.notifyDataSetChanged();
+                                            }
+                                        }, bid);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    oldbid=bid;
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        try {
+
+            //Tells the BeaconService to start looking for beacons that match the passed Region object.
+            beaconManager.startMonitoringBeaconsInRegion(region);
+        } catch (RemoteException e) {
         }
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.e("On Destroyed Called","Here");
+        beaconManager.unbind(this);
+
+    }
+
+
+
+
+
+    public interface couponCallBack{
+        void onSuccess(String ads, String cname, String result);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        Log.e("Details ", "Onstart");
+        try {
+            callAPI(new couponCallBack(){
+                @Override
+                public void onSuccess(String ads, String cname, String result) {
+                    Log.e("Details are ",ads+cname+result);
+                    Coupons coupons = new Coupons(cname, result);
+                    if (!couponList.contains(coupons)) {
+                        couponList.add(coupons);
+                        Toast.makeText(getApplicationContext(), "No new Coupon added", Toast.LENGTH_SHORT).show();
+                    }
+                    textView.setText(ads);
+                    couponsAdapter.notifyDataSetChanged();
+                }
+            }, bid);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void callAPI(final couponCallBack couponCallBack, String bid) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        RequestQueue queue = Volley.newRequestQueue(this);
+        Log.e("Details ", "inCallAPI");
+        if(bid.equals("No Nearby Beacon Found")){
+
+            //volleyCallback.onSuccess("https://xbosoft.com/wp-content/uploads/2017/09/API-Testing-Services_1-400x304.jpg");
+        }else {
+
+            jsonObject.put("bid", bid);
+            Log.e("Bid is ",bid);
+            String url = "https://suhas-api.herokuapp.com/marketing";
+            JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, url, jsonObject,
+                    new com.android.volley.Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.e("Response is ", response.toString());
+                            try {
+
+                                couponCallBack.onSuccess(response.getJSONObject("response").getString("ads")
+                                ,response.getJSONObject("response").getString("cname"),
+                                        response.getJSONObject("response").getString("coupons"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("Error is ", error.toString());
+                }
+            });
+
+            queue.add(postRequest);
+        }
+
 
     }
 }

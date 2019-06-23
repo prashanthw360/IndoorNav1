@@ -1,11 +1,9 @@
 package com.example.indoornav1;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -33,16 +31,13 @@ import java.util.Collection;
 import java.util.Collections;
 
 
+
 public class NavigationActivity extends AppCompatActivity implements BeaconConsumer {
-    ProgressDialog progressDialog;
 
     public String start;
     public String end;
     public String string2;
     public String string2old;
-    String bid; //ToDo: To be changed to String
-    String imageURL;
-    String navStatus;
     private BeaconManager beaconManager;
     RequestQueue queue;
     PhotoView imageView;
@@ -67,6 +62,8 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         Toast.makeText(getApplicationContext(), end, Toast.LENGTH_SHORT).show();
         Log.e("EndBID", "End BID "+end);
         queue= Volley.newRequestQueue(this);
+        getSupportActionBar().setTitle("Navigating");
+
 
     }
 
@@ -75,7 +72,9 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         JSONObject jsonObject = new JSONObject();
 
         if(start.equals("No Nearby Beacon Found")){
-            volleyCallback.onSuccess("https://xbosoft.com/wp-content/uploads/2017/09/API-Testing-Services_1-400x304.jpg");
+            volleyCallback.onSuccess("https://i.gifer.com/UbTh.gif");
+
+           //volleyCallback.onSuccess("https://xbosoft.com/wp-content/uploads/2017/09/API-Testing-Services_1-400x304.jpg");
         }else {
 
             jsonObject.put("src", start);
@@ -118,6 +117,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         super.onStart();
         Toast.makeText(getApplicationContext(),"OnStart Started",Toast.LENGTH_LONG).show();
 
+
         try {
             callAPI(new VolleyCallback() {
                 @Override
@@ -126,10 +126,9 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                     Log.e("Image Published", result);
                     Glide.with(getApplicationContext())
                             .load(result)
-                            .placeholder(R.drawable.common_google_signin_btn_icon_dark_normal_background)
+                            .thumbnail(Glide.with(getApplicationContext()).load(R.drawable.loadingsimple))
                             .error(R.drawable.common_google_signin_btn_icon_dark)
                             .into(imageView);
-
                 }
             }, string2,end);
 
@@ -247,7 +246,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                                                 Toast.makeText(getApplicationContext(), "Beacon Change "+string2, Toast.LENGTH_LONG).show();
                                                 Glide.with(getApplicationContext())
                                                         .load(result)
-                                                        .placeholder(R.drawable.common_google_signin_btn_icon_dark_normal_background)
+                                                        .thumbnail(Glide.with(getApplicationContext()).load(R.drawable.loadingsimple))
                                                         .error(R.drawable.common_google_signin_btn_icon_dark)
                                                         .into(imageView);
 
