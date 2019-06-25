@@ -251,7 +251,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "In Here",Toast.LENGTH_SHORT).show();
         }
        else if (position == 1) {
-            Toast.makeText(getApplicationContext(), "Yet to come", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, BuyAndCompare.class);
+            startActivity(intent);
 
         } else if (position == 2) {
            Intent intent = new Intent(MainActivity.this, CouponActivity.class);
