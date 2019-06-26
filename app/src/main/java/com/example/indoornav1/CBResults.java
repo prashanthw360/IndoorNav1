@@ -65,13 +65,13 @@ public class CBResults extends AppCompatActivity {
             }
         }));
 
-        prepareMovieData();
+        prepareStoreData();
     }
 
     /**
      * Prepares sample data to provide data set to adapter
      */
-    private void prepareMovieData() {
+    private void prepareStoreData() {
         Store store = new Store("s1", "50", "5", "1kg");
         storeList.add(store);
 
