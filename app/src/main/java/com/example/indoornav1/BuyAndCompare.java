@@ -47,7 +47,7 @@ public class BuyAndCompare extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Error! Select the category", Toast.LENGTH_SHORT).show();
 
         }else{
-            Intent intent = new Intent(BuyAndCompare.this,CBUser.class);
+            Intent intent = new Intent(BuyAndCompare.this,CBResults.class);
             startActivity(intent);
         }
     }
