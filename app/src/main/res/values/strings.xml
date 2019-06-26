@@ -8,7 +8,6 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-
     <string-array name="items">
         <item>Select from here</item>
         <item>Apple</item>
@@ -20,4 +19,5 @@
         <item>AC</item>
         <item>Mobile phone</item>
     </string-array>
+    <string name="title_activity_cbresults">CBResults</string>
 </resources>

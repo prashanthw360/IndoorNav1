@@ -20,6 +20,11 @@
         android:theme="@style/AppTheme">
         <activity android:name=".BuyAndCompare"></activity>
         <activity
+            android:name=".CBResults"
+            android:label="@string/title_activity_cbresults"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".BuyAndCompare" />
+        <activity
             android:name=".CouponActivity"
             android:label="@string/title_activity_coupon" />
         <activity android:name=".NavigationActivity" />
