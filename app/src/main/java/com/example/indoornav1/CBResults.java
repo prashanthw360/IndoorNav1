@@ -1,5 +1,6 @@
 package com.example.indoornav1;
 
+import android.content.Intent;
 import  android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -48,6 +49,7 @@ public class CBResults extends AppCompatActivity {
         setContentView(R.layout.activity_cbresults);
         String search = getIntent().getStringExtra("search");
         String category=getIntent().getStringExtra("category");
+        Log.e("CBResults ", search+ " "+category);
 
 
 
@@ -132,6 +134,9 @@ public class CBResults extends AppCompatActivity {
             public void onClick(View view, int position) {
                 Store store = storeList.get(position);
                 Toast.makeText(getApplicationContext(), store.getSid() + " is selected!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(CBResults.this, NavigationActivity.class);
+                intent.putExtra("payload", store.getSid());
+                startActivity(intent);
             }
 
             @Override
@@ -147,6 +152,7 @@ public class CBResults extends AppCompatActivity {
     private void callAPI(final callBack cb, String search, String category) {
 
         RequestQueue requestQueue = Volley.newRequestQueue(CBResults.this);
+        Log.e("S&C is ", search+ " "+category);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://suhas-api.herokuapp.com/search?item="+search+"&category="+category, null,
                 new Response.Listener<JSONObject>() {
                     @Override

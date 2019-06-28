@@ -48,6 +48,8 @@ public class BuyAndCompare extends AppCompatActivity {
 
         }else{
             Intent intent = new Intent(BuyAndCompare.this,CBResults.class);
+            intent.putExtra("search",SearchQuery);
+            intent.putExtra("category",SearchCat);
             startActivity(intent);
         }
     }
