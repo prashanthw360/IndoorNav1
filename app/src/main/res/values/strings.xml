@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">IndoorNav1</string>
+    <string name="title_activity_buy">BuyActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_coupon">CouponActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string-array name="items">
+        <item>Select from here</item>
+        <item>Clothes</item>
+        <item>Fruit</item>
+        <item>Vegetables</item>
+        <item>Furniture</item>
+        <item>Electronics</item>
+        <item>Healthcare</item>
+    </string-array>
+
+    <string-array name="cbmenu">
+        <item>Sort by Price</item>
+        <item>Sort by Ratings</item>
+    </string-array>
+    <string name="title_activity_cbresults">CBResults</string>
+</resources>
