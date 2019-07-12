@@ -16,7 +16,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/indoor_nav_bg"
+            android:background="@drawable/indoor_nav_bg1"
             android:gravity="center"
             android:text="Compare and Buy"
             android:textColor="#000000"
@@ -36,9 +36,9 @@
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:text="What do you want to buy"
+            android:text="What do you want to buy?"
             android:textAlignment="center"
-            android:textColor="#E57373"
+            android:textColor="#B71C1C"
             android:textSize="28dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/textView3"
@@ -47,7 +47,7 @@
             app:layout_constraintTop_toBottomOf="@+id/textView3"
             app:layout_constraintVertical_bias="0.029" />
 
-        <EditText
+        <EditText style="@style/Widget.AppCompat.EditText"
             android:id="@+id/CBSearch"
             android:layout_width="match_parent"
             android:layout_height="44dp"
@@ -75,14 +75,14 @@
             android:layout_height="37dp"
             android:layout_marginTop="8dp"
             android:text="OR"
-            android:textColor="#E57373"
+            android:textColor="#B71C1C"
             android:textSize="28dp"
             app:layout_constraintEnd_toEndOf="@+id/CBSearch"
             app:layout_constraintHorizontal_bias="0.519"
             app:layout_constraintStart_toStartOf="@+id/CBSearch"
             app:layout_constraintTop_toBottomOf="@+id/CBSearch" />
 
-        <Spinner
+        <Spinner style="@style/Widget.AppCompat.Spinner.DropDown"
             android:id="@+id/CBCat"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -99,7 +99,7 @@
             app:layout_constraintTop_toTopOf="@+id/textView6"
             app:layout_constraintVertical_bias="0.325" />
 
-        <Button
+        <Button style="@style/Widget.AppCompat.Button.Colored"
             android:id="@+id/cbbutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
