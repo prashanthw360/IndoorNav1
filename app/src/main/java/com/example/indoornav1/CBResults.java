@@ -2,6 +2,7 @@ package com.example.indoornav1;
 
 import android.content.Intent;
 import  android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +39,8 @@ public class CBResults extends AppCompatActivity {
     TextView textView;
     Spinner spinner;
     Toolbar toolbar;
+    String search;
+    String category;
 
     private List<Store> storeList = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -47,8 +50,8 @@ public class CBResults extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cbresults);
-        String search = getIntent().getStringExtra("search");
-        String category=getIntent().getStringExtra("category");
+        search = getIntent().getStringExtra("search");
+        category=getIntent().getStringExtra("category");
         Log.e("CBResults ", search+ " "+category);
 
 
@@ -62,18 +65,22 @@ public class CBResults extends AppCompatActivity {
                 android.R.layout.simple_list_item_1,
                 getResources().getStringArray(R.array.cbmenu));
         spinner.setAdapter(arrayAdapter);
-        callAPI(new callBack() {
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
             @Override
-            public void onReceive(final JSONObject result) throws JSONException {
-                //Callback has been done
-                Log.e("CBResults", result.toString());
-                prepareStoreData(result.getJSONObject("response").getJSONArray("price_wise"));
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void run() {
+                callAPI(new callBack() {
                     @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        Toast.makeText(CBResults.this,
-                                spinner.getSelectedItem().toString(),
-                                Toast.LENGTH_SHORT).show();
+                    public void onReceive(final JSONObject result) throws JSONException {
+                        //Callback has been done
+                        Log.e("CBResults", result.toString());
+                        prepareStoreData(result.getJSONObject("response").getJSONArray("price_wise"));
+                        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                Toast.makeText(CBResults.this,
+                                        spinner.getSelectedItem().toString(),
+                                        Toast.LENGTH_SHORT).show();
                                 if(parent.getItemAtPosition(position).equals("Sort by Price")) {
                                     try {
                                         prepareStoreData(result.getJSONObject("response").getJSONArray("price_wise"));
@@ -91,19 +98,25 @@ public class CBResults extends AppCompatActivity {
                                 }
 
 
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+
+
+                            }
+                        });
+
                     }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-
-                    }
-                });
-
+                }, search, category);
+                handler.postDelayed(this,5000);
+                Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT).show();
             }
-        }, search, category);
+
+        };
 
 
+        handler.postDelayed(runnable,5000);
 
         sAdapter = new StoreAdapter(storeList);
 
