@@ -74,7 +74,7 @@
             android:layout_width="45dp"
             android:layout_height="37dp"
             android:layout_marginTop="8dp"
-            android:text="OR"
+            android:text="Select Category"
             android:textColor="#E57373"
             android:textSize="28dp"
             app:layout_constraintEnd_toEndOf="@+id/CBSearch"
