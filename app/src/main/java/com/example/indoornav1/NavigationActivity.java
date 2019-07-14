@@ -59,8 +59,10 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
         beaconManager.bind(this);
         string2="No Nearby Beacon Found";
         end=getIntent().getStringExtra("payload");
+        Log.e("CBRes", "In OnStart");
+        Log.e("CBRes", start+" "+end);
         Toast.makeText(getApplicationContext(), end, Toast.LENGTH_SHORT).show();
-        Log.e("EndBID", "End BID "+end);
+
         queue= Volley.newRequestQueue(this);
         getSupportActionBar().setTitle("Navigating");
 
@@ -88,6 +90,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
                             Log.e("Response is ", response.toString());
                             try {
                                 volleyCallback.onSuccess(response.getString("response"));
+                                Toast.makeText(getApplicationContext(), "NavActResp", Toast.LENGTH_SHORT).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -116,7 +119,7 @@ public class NavigationActivity extends AppCompatActivity implements BeaconConsu
     protected void onStart() {
         super.onStart();
         Toast.makeText(getApplicationContext(),"OnStart Started",Toast.LENGTH_LONG).show();
-
+        Log.e("CBRes", "In OnStart");
 
         try {
             callAPI(new VolleyCallback() {

@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //NavigationBar
         mNavItems.add(new NavItem("Navigate", "Default Page", R.drawable.nav));
-        mNavItems.add(new NavItem("Compare and Buy", "Some Thing1", R.drawable.comp));
-        mNavItems.add(new NavItem("Coupons and Premiums", "Something2", R.drawable.discount));
+        mNavItems.add(new NavItem("Compare and Buy", "Compare and Buy Items", R.drawable.comp));
+        mNavItems.add(new NavItem("Coupons and Premiums", "Exciting Stuff", R.drawable.discount));
 
         // DrawerLayout
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
@@ -180,15 +180,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         getSupportActionBar().setTitle("The Troshos");
-
-
-
-
-
-
-
-
-
 
     }
     String bid;

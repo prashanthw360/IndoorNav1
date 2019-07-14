@@ -3,6 +3,7 @@ package com.example.indoornav1;
 import android.content.Intent;
 import  android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +30,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +46,10 @@ public class CBResults extends AppCompatActivity {
     Toolbar toolbar;
     String search;
     String category;
+    String bid;
+    Intent intent;
+    Handler handler;
+    Runnable runnable;
 
     private List<Store> storeList = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -53,7 +62,7 @@ public class CBResults extends AppCompatActivity {
         search = getIntent().getStringExtra("search");
         category=getIntent().getStringExtra("category");
         Log.e("CBResults ", search+ " "+category);
-
+        bid="No Nearby Beacon Found";
 
 
         spinner = findViewById(R.id.sort);
@@ -65,8 +74,8 @@ public class CBResults extends AppCompatActivity {
                 android.R.layout.simple_list_item_1,
                 getResources().getStringArray(R.array.cbmenu));
         spinner.setAdapter(arrayAdapter);
-        final Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
+        handler = new Handler();
+        runnable = new Runnable() {
             @Override
             public void run() {
                 callAPI(new callBack() {
@@ -110,7 +119,7 @@ public class CBResults extends AppCompatActivity {
                     }
                 }, search, category);
                 handler.postDelayed(this,5000);
-                Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(getApplicationContext(), "Refreshed", Toast.LENGTH_SHORT).show();
             }
 
         };
@@ -146,10 +155,28 @@ public class CBResults extends AppCompatActivity {
             @Override
             public void onClick(View view, int position) {
                 Store store = storeList.get(position);
+
                 Toast.makeText(getApplicationContext(), store.getSid() + " is selected!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(CBResults.this, NavigationActivity.class);
-                intent.putExtra("payload", store.getSid());
-                startActivity(intent);
+                String storeID=store.getSid();
+                intent = new Intent(CBResults.this, NavigationActivity.class);
+                FirebaseDatabase.getInstance().getReference().child(storeID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        bid=dataSnapshot.getValue(String.class);
+                        intent.putExtra("payload",bid);
+                        Log.e("In onDataChange"," Bid is "+bid);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        Log.e("FirebaseCB", bid);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+//                intent.putExtra("payload", "1aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+//                startActivity(intent);
             }
 
             @Override
@@ -158,7 +185,6 @@ public class CBResults extends AppCompatActivity {
             }
         }));
 
-        //prepareStoreData();
 
     }
 
@@ -217,4 +243,9 @@ public class CBResults extends AppCompatActivity {
         public void onReceive(JSONObject result) throws JSONException;
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(runnable);
+    }
 }
