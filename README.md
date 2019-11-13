@@ -1,11 +1,11 @@
 # NaaS: Navigation as a Service
 ## Objectives:
-▪ To develop a mobile application which provides indoor navigation facility for
+<ul>To develop a mobile application which provides indoor navigation facility for
 customers through Bluetooth beacons inside vast buildings like malls, airports, etc.
-▪ To easily evacuate people from buildings during catastrophes.
-▪ To aid the customers in making better decisions at while buying products at their
+<ul>To easily evacuate people from buildings during catastrophes.
+<ul>To aid the customers in making better decisions at while buying products at their
 fingertips.
-▪ To utilize the beacon technology for helping businesses to grow and to understand
+<ul>To utilize the beacon technology for helping businesses to grow and to understand
 their customers better.
 
 ## Development
