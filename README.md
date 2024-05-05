@@ -1,6 +1,8 @@
 # NaaS: Navigation as a Service
 
-This was developed as a part of the TCS EnginX hackathon. Due to certain regulations, only a part of the artifact is with us, the further development was assisted by the hosts, and the code is unavailable.
+This was developed as a part of the TCS EnginX hackathon. Due to regulations, only a part of the artifact can be made public, the further development was assisted by the hosts, and the code is unavailable. 
+
+This repo consists of the MVP of the android application with rudimentary indoor positioning and navigation. 
 
 ## Objectives:
 1. To develop a mobile application which provides indoor navigation facility for
