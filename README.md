@@ -1,4 +1,7 @@
 # NaaS: Navigation as a Service
+
+This was developed as a part of the TCS EnginX hackathon. Due to certain regulations, only a part of the artifact is with us, the further development was assisted by the hosts, and the code is unavailable.
+
 ## Objectives:
 1. To develop a mobile application which provides indoor navigation facility for
 customers through Bluetooth beacons inside vast buildings like malls, airports, etc. <br>
@@ -20,5 +23,13 @@ application.<br>
 4. Due to the low cost and multiple use cases of the beacons, it can be deployed in huge
 commercial centres where hassle-free navigation is to be provided along with other
 business use cases.<br>
+
+## How does this work?
+<img width="682" alt="image" src="https://github.com/prashanthwagle/IndoorNav1/assets/31559029/78c95b1b-092b-4d71-b5a4-e74e034821ca">
+
+## User Flow
+<img width="682" alt="image" src="https://github.com/prashanthwagle/IndoorNav1/assets/31559029/9686c513-692e-4078-8cde-6c1c3a401798">
+
+
 
 ### For the Web and Database Counterpart, please refer https://github.com/RohitRH/indoor-navigation
